@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Container } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from '../assets/logo.png'; // Import logo
 
 const Navbar = () => {
   return (
@@ -10,12 +11,15 @@ const Navbar = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <AppBar position="static" sx={{ backgroundColor: '#6a3de8' }}>
+      <AppBar position="static" sx={{ backgroundColor: '#190E49' }}>
         <Container>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-              Student Retention Prediction
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+              <img src={logo} alt="logo" style={{ marginRight: '10px', height: '40px' }} />
+              <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                MACHINE LEARNING
+              </Typography>
+            </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button 
                 color="inherit" 

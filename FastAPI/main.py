@@ -51,3 +51,13 @@ async def predict(input_data: PredictionInput, db: Session = Depends(get_db)):
 @app.get("/predictions/", response_model=List[StudentPredictionResponse])
 async def get_predictions(db: Session = Depends(get_db)):
     return db.query(models.StudentPrediction).all()
+
+@app.delete("/predictions/{prediction_id}")
+async def delete_prediction(prediction_id: int, db: Session = Depends(get_db)):
+    prediction = db.query(models.StudentPrediction).filter(models.StudentPrediction.id == prediction_id).first()
+    if prediction is None:
+        return {"message": "Prediction not found"}
+    
+    db.delete(prediction)
+    db.commit()
+    return {"message": "Prediction deleted successfully"}

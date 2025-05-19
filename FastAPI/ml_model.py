@@ -8,15 +8,8 @@ from sklearn.preprocessing import StandardScaler
 
 # Định nghĩa input từ người dùng
 class PredictionInput(BaseModel):
-    Age: float
-    avg_enrolled: float
-    avg_approved: float
-    avg_grade: float
-    avg_without_evaluations: float
-
     Marital_status: int
     Application_mode: int
-    Application_order: int
     Course: int
     Daytime_evening_attendance: int
     Previous_qualification: int
@@ -29,43 +22,45 @@ class PredictionInput(BaseModel):
     Tuition_fees_up_to_date: int
     Gender: int
     Scholarship_holder: int
+    Age_at_enrollment: int
+    avg_enrolled: float
+    avg_approved: float
+    avg_grade: float
 
 class PredictionOutput(BaseModel):
     prediction: str
 
 class StudentRetentionModel:
     def __init__(self):
-        # Load mô hình và preprocessor từ file
         with open('model.pkl', 'rb') as f:
             self.model = pickle.load(f)
-        with open('preprocessor.pkl', 'rb') as f:
-            self.preprocessor = pickle.load(f)
 
-        # Mapping kết quả mô hình về tên nhãn
-        self.target_mapping = {0: 'Dropout', 1: 'Enrolled', 2: 'Graduate'}
+        self.target_mapping = {0: 'Dropout', 1: 'Graduate'}
 
     def preprocess_input(self, input_data: PredictionInput):
-        # Chuyển Pydantic thành dict rồi thành DataFrame
-        data_dict = input_data.dict()
-        df = pd.DataFrame([data_dict])
-        
-        df = df.rename(columns={'Daytime_evening_attendance': 'Daytime/evening_attendance'})
+        ordered_columns = [
+            'Marital_status', 'Application_mode', 'Course', 'Daytime/evening_attendance',
+            'Previous_qualification', 'Mother_qualification', 'Father_qualification',
+            'Mother_occupation', 'Father_occupation', 'Displaced', 'Debtor',
+            'Tuition_fees_up_to_date', 'Gender', 'Scholarship_holder',
+            'Age_at_enrollment', 'avg_enrolled', 'avg_approved', 'avg_grade'
+        ]
 
-        # Cột phải đúng thứ tự như lúc huấn luyện
-        return self.preprocessor.transform(df)
+        data_dict = input_data.dict()
+        data_dict['Daytime/evening_attendance'] = data_dict.pop('Daytime_evening_attendance')
+
+        # Không dùng preprocessor, chỉ tạo đúng thứ tự
+        X = pd.DataFrame([[data_dict[col] for col in ordered_columns]], columns=ordered_columns)
+
+        print("Input đưa vào model:", X.values.tolist())
+        return X.values 
 
     def predict(self, input_data: PredictionInput):
-        # Tiền xử lý đầu vào
         X_processed = self.preprocess_input(input_data)
-
-        # Chỉ dự đoán kết quả, không tính xác suất
         prediction = self.model.predict(X_processed)[0]
-        # raise Exception(prediction)
-        return {
-            # "prediction": prediction
-            "prediction": self.target_mapping[prediction]
+        print(prediction)
+        return {"prediction": self.target_mapping[prediction]}
 
-        }
 
 # Khởi tạo mô hình để dùng trong FastAPI
 model = StudentRetentionModel()
