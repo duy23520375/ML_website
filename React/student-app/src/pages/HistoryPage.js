@@ -205,7 +205,7 @@ const HistoryPage = () => {
                       onChange={(e) => setSortField(e.target.value)}
                     >
                       <MenuItem value="date">Date</MenuItem>
-                      <MenuItem value="Age">Age_at_enrollment</MenuItem>
+                      <MenuItem value="Age_at_enrollment">Age_at_enrollment</MenuItem>
                       <MenuItem value="avg_enrolled">avg_enrolled</MenuItem>
                       <MenuItem value="avg_approved">avg_approved</MenuItem>
                       <MenuItem value="avg_grade">avg_grade</MenuItem>

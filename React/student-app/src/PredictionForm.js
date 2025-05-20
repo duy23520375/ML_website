@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, Typography, Grid, TextField, MenuItem, Button, CircularProgress, Alert, Stepper, Step, StepLabel, Paper } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Person, School, Group } from '@mui/icons-material';
+import { Person, School, Group, SentimentVeryDissatisfied, SentimentVerySatisfied } from '@mui/icons-material';
 import api from './api';
 import { Stack } from '@mui/material';
 
@@ -52,7 +52,7 @@ const PredictionForm = () => {
   
     setLoading(true);
     setResult(null);
-    setIsSubmitted(false);
+    setIsSubmitted(false); // Reset before new prediction
   
     try {
       const response = await api.post('/predict/', formData);
@@ -60,7 +60,9 @@ const PredictionForm = () => {
       setIsSubmitted(true);
     } catch (error) {
       console.error('Lỗi khi dự đoán:', error);
-      alert('Có lỗi xảy ra khi dự đoán. Vui lòng thử lại.');
+      // Consider setting a specific error message state here instead of alert
+      setResult({ error: 'Có lỗi xảy ra khi dự đoán. Vui lòng thử lại.' }); 
+      setIsSubmitted(true); // Still set to true to display the error message
     } finally {
       setLoading(false);
     }
@@ -570,7 +572,7 @@ const renderFamilyInfo = () => (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 2, width: '100%' }}>
       <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
         <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
-          Graduation Prediction
+          Dropout Prediction
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
@@ -597,20 +599,59 @@ const renderFamilyInfo = () => (
           </Box>
         </Box>
 
-        {isSubmitted && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Alert
-              severity={result === 'Graduate' ? 'success' : 'warning'}
-              sx={{ mt: 3 }}
-            >
-              Prediction result: {result === 'Graduate' ? 'Graduate' : 'Dropout'}
-            </Alert>
-          </motion.div>
+        {isSubmitted && result && (
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+              >
+                {result.error ? (
+                  <Alert
+                    severity="error"
+                    sx={{ justifyContent: 'center', alignItems: 'center', py: 2, fontSize: '1.1rem' }}
+                  >
+                    <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+                      Prediction Error
+                    </Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      {result.error}
+                    </Typography>
+                  </Alert>
+                ) : result === 'Dropout' ? (
+                  <Alert
+                    severity="error" // Using error for Dropout as it's a negative outcome
+                    icon={<SentimentVeryDissatisfied fontSize="inherit" sx={{ fontSize: '2rem' }} />}
+                    sx={{ justifyContent: 'center', alignItems: 'center', py: 2, fontSize: '1.1rem' }}
+                  >
+                    <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', ml: 1 }}>
+                      Prediction: Dropout
+                    </Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      This student is at risk of dropping out. Timely intervention measures are needed.
+                    </Typography>
+                  </Alert>
+                ) : result === 'Graduate' ? (
+                  <Alert
+                    severity="success"
+                    icon={<SentimentVerySatisfied fontSize="inherit" sx={{ fontSize: '2rem' }} />}
+                    sx={{ justifyContent: 'center', alignItems: 'center', py: 2, fontSize: '1.1rem' }}
+                  >
+                    <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', ml: 1 }}>
+                      Prediction: Graduate
+                    </Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      Congratulations! This student is predicted to graduate.
+                    </Typography>
+                  </Alert>
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
+          </Box>
         )}
+
       </Paper>
     </Box>
   );
